@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Knowledge Upload</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 2rem;
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"], input[type="email"], select, input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 0.25rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .btn {
+      background-color: #007BFF;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .checkbox-group {
+      margin: 1rem 0;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .icon-section i {
+      font-size: 1.2rem;
+      color: #007BFF;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body onload="getList()">
+  <header>
+    <i class="fas fa-tools"></i> Admin Panel — Knowledge Upload
+  </header>
+
+  <div class="container">
+    <div class="section">
+      <div class="icon-section">
+        <i class="fas fa-folder-plus"></i>
+        <h3>Create a New Category</h3>
+      </div>
+      <input type="text" id="ccat" placeholder="Enter category name" />
+      <button class="btn" onclick="createCat(event)">Create Category</button>
+    </div>
+
+    <div class="section">
+      <div class="icon-section">
+        <i class="fas fa-trash"></i>
+        <h3>Remove a File or Category</h3>
+      </div>
+      <label>Select Category</label>
+      <select class="categories" id="delcats" onchange="getFiles()">
+        <option value="default">Select a category</option>
+      </select>
+      <label>Select File</label>
+      <select id="dfiles">
+        <option value="all">All</option>
+      </select>
+      <button class="btn" onclick="removeCat(event)">Remove</button>
+    </div>
+
+    <div class="section">
+      <div class="icon-section">
+        <i class="fas fa-upload"></i>
+        <h3>Upload Files</h3>
+      </div>
+      <label>Select Category</label>
+      <select class="categories" id="upload">
+        <option value="default">Select a category</option>
+      </select>
+      <label>Choose Files (PDF only)</label>
+      <input type="file" id="files" name="file" accept=".pdf" multiple />
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="image" name="image" value="true" /> All files are image-based</label>
+      </div>
+      <button class="btn" onclick="fileUpload(event)">Upload Files</button>
+    </div>
+
+    <div class="section">
+      <div class="icon-section">
+        <i class="fas fa-envelope"></i>
+        <h3>Assign Fallback Email</h3>
+      </div>
+      <input type="email" id="email" placeholder="Enter fallback email" />
+      <button class="btn" onclick="saveEmail(event)">Assign Email</button>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Web QA Bot. All rights reserved.
+  </footer>
+  <script>
+        
+    function showPopupMessage(message) {
+        // Create the pop-up div
+        //setTimeout(() => {
+        //    const b = document.getElementById('body');
+        //    b.reload();
+        //}, 10);
+        const popup = document.createElement('div');
+        popup.textContent = message;
+        popup.style.position = 'fixed';
+        popup.style.top = '20px';
+        popup.style.right = '20px';
+        popup.style.padding = '10px 20px';
+        popup.style.backgroundColor = 'red';
+        popup.style.color = '#fff';
+        popup.style.borderRadius = '5px';
+        popup.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+        popup.style.fontSize = '16px';
+        popup.style.zIndex = '1000';
+        let inv = message.search("Invalid");
+        let exist = message.search("exist");
+        let nec = message.search("necessary");
+        let val = message.search("valid");
+        let sel = message.search("select");
+        let only = message.search("only");
+        
+        if ((inv == -1) && (exist == -1) && (nec == -1) && (val == -1) && (sel == -1) && (only == -1)) {
+            console.log(message.search("Invalid"));
+            popup.style.backgroundColor = '#28a745';
+        }
+        document.body.appendChild(popup);
+        
+        // Remove the pop-up after 3 seconds
+        setTimeout(() => {
+            popup.remove();
+        }, 3000);
+    }
+
+    function createCat(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('ccat').value;
+        fetch(`/create`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        })
+        .then(response => response.text()) // Get plain text response
+        .then(data => {
+            showPopupMessage(data)
+        })
+    }
+    
+    function getList() {
+        let catList = [];
+        fetch(`/list`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            catList = data;
+            console.log(catList);
+            let dropdown = document.getElementsByClassName('categories');
+            for (let i = 0; i < catList.length; i++) {
+                console.log(catList[i]);
+                
+                for (each of dropdown) {
+                    let catDiv = document.createElement("option");
+                    catDiv.text = catList[i];
+                    catDiv.value = catList[i];
+                    each.appendChild(catDiv);
+                }
+            }
+        })
+    }
+
+    function getFiles() {
+        const pdfDropdown = document.getElementById('dfiles');
+        console.log(pdfDropdown.options.length);
+        for (let i = pdfDropdown.options.length; i >= 1; i--) {
+            pdfDropdown.remove(pdfDropdown.options[i]);
+        }
+
+        let allDiv = document.createElement("option");
+        allDiv.value="all"
+        allDiv.text="All"
+        pdfDropdown.appendChild(allDiv)
+        let catList = [];
+        
+        var cat = document.getElementById('delcats').selectedIndex;
+        const selected = document.getElementById('delcats').options;
+        console.log(cat);
+        if (cat == -1) {
+            cat = 0
+        }
+        const name = selected[cat].text;
+        fetch(`/files`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            catList = data;
+            //const delcat = document.getElementById('delete');
+            //let pdfDropdown = document.createElement("select");
+            //delcat.appendChild(pdfDropdown);
+            
+            for (let i = 0; i < catList.length; i++) {
+                console.log(catList[i]);
+                let pdfDiv = document.createElement("option");
+                pdfDiv.text = catList[i];
+                pdfDiv.value = catList[i];
+                pdfDropdown.appendChild(pdfDiv);
+            }
+        })
+
+        fetch(`/list`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            catList = data;
+            console.log(catList);
+            const delcat = document.getElementById('delete');
+            }
+        )
+    }
+
+    function removeCat(event) {
+        event.preventDefault();
+
+        //const name = document.getElementById('delcat').value;
+        const cat = document.getElementById('delcats').selectedIndex;
+        const selectedc = document.getElementById('delcats').options;
+        const file = document.getElementById('dfiles').selectedIndex;
+        const selectedf = document.getElementById('dfiles').options;
+        console.log(selectedc[cat].text);
+        const name = selectedc[cat].text;
+        const f = selectedf[file].text;
+        console.log(f);
+        fetch(`/delete`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, f })
+        })
+        .then(response => response.text()) // Get plain text response
+        .then(data => {
+            showPopupMessage(data)
+        })
+    }
+
+    //DEPRECATED
+    function updateCat(event) {
+        event.preventDefault();
+
+        const cat = document.getElementById('ucats').selectedIndex;
+        
+        const selected = document.getElementById('ucats').options;
+        console.log(selected[cat].text);
+        const name = selected[cat].text;
+        fetch(`/update`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        })
+        .then(response => response.text()) // Get plain text response
+        .then(data => {
+            showPopupMessage(data)
+        })
+    }
+
+
+    function fileUpload(event) {
+        event.preventDefault();
+        
+        //const name = document.getElementById('filename').value.trim();
+        const files = document.getElementById('files').files;
+        const cat = document.getElementById('upload').selectedIndex;
+        const selected = document.getElementById('upload').options;
+        var image = "false";
+        let img = document.getElementById('image');
+        if (img.checked) var image = "true";
+            else var image = "false";
+        console.log(image);
+        const name = selected[cat].text;
+        var formData = new FormData();
+        formData.append("name", name);
+        formData.append("image", image);
+        for (let i = 0; i < files.length; i++) {
+            formData.append("file", files[i]);
+        }
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text()) // Get plain text response
+        .then(data => {
+            showPopupMessage(data)
+        })
+    }
+
+    function saveEmail(event) {
+        event.preventDefault();
+        console.log(document.getElementById('email').value)
+        const email = document.getElementById('email').value;
+        fetch(`/email`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        })
+        .then(response => response.text()) // Get plain text response
+        .then(data => {
+            showPopupMessage(data)
+        })
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+    "api": {
+        "langsmith": "",
+        "tracing": "true"
+    },
+    "generative model": {
+        "platform": "ollama",
+        "model": "gemma3:12b",
+        "max loops": 2,
+        "max docs": 3
+    },
+    "tool model": {
+        "platform": "ollama",
+        "model": "llama3.1"
+    },
+    "vision model": {
+        "platform": "ollama",
+        "model": "llava-phi3"
+    },
+    "embeddings": {
+        "platform": "ollama",
+        "model": "nomic-embed-text:latest"
+    },
+    "vectorstore": {
+        "model": "faiss",
+        "save": "faiss_index"
+    },
+    "message": {
+        "fail": "I'm sorry, I don't have that information."
+    },
+    "email": "",
+    "max models": 2,
+    "sleep timer": "10m",
+    "number of GPU": 1,
+    "grade": "no",
+    "preload": "yes"
+}

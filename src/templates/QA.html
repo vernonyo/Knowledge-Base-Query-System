@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Base for BRTSYS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Basic styling similar to your original QA.html */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #eef2f3, #cfd9df);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 1.2rem;
+      text-align: center;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 850px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .process {
+      margin-left: 25%;
+      font-size: 2rem;
+      visibility: hidden;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      margin-bottom: 1.5rem;
+    }
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+    .btn-success {
+      background-color: #28a745;
+      color: white;
+    }
+    .btn-success:hover {
+      background-color: #1e7e34;
+    }
+    .btn-outline-secondary {
+      background: linear-gradient(90deg, #d9e4ff 0%, #f3f8ff 100%);
+      border: 1px solid #0056b3;
+      color: #003366;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-weight: 600;
+      transition: transform 0.2s ease-in-out;
+    }
+    .btn-outline-secondary:hover {
+      background: #0056b3;
+      color: white;
+      transform: scale(1.05);
+    }
+    .btn i {
+      margin-right: 0.5rem;
+    }
+    /* Updated chat box style with ID for easier JS targeting */
+    #chatBox {
+      background-color: #fefeff;
+      min-height: 300px;
+      border: 2px solid #007bff;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: 400px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+    .chat-input {
+      background-color: #fafff9;
+      flex: 1;
+      padding: 0.6rem;
+      border: 2px solid #28a745;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+    /* Simple message styling */
+    .message {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+    .left {
+      background: #eee;
+      align-self: flex-start;
+    }
+    .right {
+      background: #cce5ff;
+      align-self: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <i class="fas fa-lightbulb" style="font-size: 1.5rem; background: linear-gradient(to bottom, #f4c430 0%, #28a745 34%, #00cfff 67%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+    Knowledge Base for BRTSYS
+  </header>
+  <div class="chat-container">
+    <!-- New Thread button -->
+    <div>
+      <button class="btn btn-primary" title="Start a new thread" id="newThreadBtn">
+        <i class="fas fa-comments"></i> New Thread
+      </button>
+      <text class="process" id="waitid">
+        Waiting
+      </text>
+    </div>
+    <!-- Chat display area now uses an ID (chatBox) -->
+    <div id="chatBox"></div>
+    <!-- Input area using IDs for easy reference -->
+    <div style="display: flex; align-items: center;">
+      <input type="text" id="userInput" placeholder="What would you like to find out?" class="chat-input" style="flex: 1; padding: 0.6rem; margin-right: 0.5rem;" />
+      <button class="btn btn-success" title="Send Message" id="sendBtn">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+    <!-- Cite Source button -->
+    <div style="text-align: right; margin-top: 1rem;">
+      <button class="btn btn-outline-secondary" id="citeBtn" title="View Sources">
+        <i class="fas fa-book-open"></i> Cite Source
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Track message IDs similar to QA-o.html
+    function startLoadingMessage() {
+      const processText = document.getElementById("waitid");
+      console.log(processText);
+      processText.style.visibility='visible';
+      console.log(processText);
+      let dots = 0;
+  
+      // Clear the current content and start the animation
+      processText.value = "Waiting";
+      loadingInterval = setInterval(() => {
+          console.log("dot");
+          dots = (dots + 1) % 4; // Cycle through 0, 1, 2, 3
+          processText.textContent = "Waiting" + ".".repeat(dots);
+      }, 500); // Update every 500ms
+    }
+
+    let count = 0;
+
+    // Function to display messages in the chatBox
+    function displayMessage(text, side, id) {
+      let chatBox = document.getElementById("chatBox");
+      let messageDiv = document.createElement("div");
+      messageDiv.className = side === "right" ? "message right" : "message left";
+      if (text !== "") {
+        messageDiv.textContent = text;
+      }
+      messageDiv.id = id;
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // New Thread functionality
+    document.getElementById("newThreadBtn").addEventListener('click', () => {
+      fetch('/new').then(() => {
+        document.getElementById("chatBox").innerHTML = '';
+      });
+    });
+
+    // Function to send a message and handle streamed bot response
+    async function sendMessage() {
+      let inputField = document.getElementById("userInput");
+      let message = inputField.value.trim();
+      if (message === "") return;
+      startLoadingMessage();
+      // Display the user's message
+      displayMessage(message, "right", count);
+      count++;
+      inputField.value = "";
+      // Create a placeholder for the bot's answer
+      displayMessage("", "left", count);
+
+      try {
+        const response = await fetch('/run', {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            const processText = document.getElementById('waitid');
+            console.log(processText);
+            processText.style.visibility='hidden';
+            break
+          };
+          const text = decoder.decode(value);
+          // Append each streamed chunk to the placeholder element
+          document.getElementById(count).innerHTML += text;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Bind the sendMessage function to the send button and Enter key press
+    document.getElementById("sendBtn").addEventListener('click', sendMessage);
+    document.getElementById("userInput").addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Function to handle "Cite Source" logic
+    function getSources() {
+      let cites = document.getElementsByClassName("cite");
+      for (let each of cites) {
+        each.remove();
+      }
+      let source = "";
+      fetch('/sourcetitle', {
+        method: 'GET'
+      })
+      .then(response => response.text())
+      .then(data => {
+        source = data;
+      });
+      fetch('/source', {
+        method: 'GET'
+      })
+      .then(response => response.text())
+      .then(data => {
+        count++;
+        displayMessage("", "left", count);
+        let cite = document.getElementById(count);
+        cite.innerHTML += `<a href="/source">${source}</a>`;
+        cite.classList.add("cite");
+      });
+    }
+
+    document.getElementById("citeBtn").addEventListener('click', getSources);
+  </script>
+</body>
+</html>
